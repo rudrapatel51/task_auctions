@@ -10,7 +10,7 @@ const VehicleOptions = () => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [message, setMessage] = useState('');
 
-  // Function to fetch vehicle options
+  // fetch vehicle options
   useEffect(() => {
     const fetchOptions = async () => {
       try {
@@ -25,16 +25,16 @@ const VehicleOptions = () => {
     fetchOptions();
   }, []);
 
-  // Function to handle option selection
+  // handle option selection
   const handleSelect = (value) => {
     setSelectedOptions((prevSelected) =>
       prevSelected.includes(value) ? prevSelected.filter((item) => item !== value) : [...prevSelected, value]
     );
   };
 
-  // Function to submit selected options
+  // Function to submit
   const handleSubmit = async () => {
-    const mobile = localStorage.getItem('mobile'); // Retrieve mobile number from localStorage
+    const mobile = localStorage.getItem('mobile'); //localstorage of mobile no beacuse it was not going to api
     if (!mobile) {
       setMessage('Mobile number is required. Please login again.');
       return;

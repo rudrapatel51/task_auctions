@@ -7,7 +7,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to include the token in headers
+// request token to access the protected url
 api.interceptors.request.use(
   config => {
     const token = localStorage.getItem('authToken');
@@ -21,7 +21,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle errors globally
+// Response interceptor 
 api.interceptors.response.use(
   response => response,
   error => {
