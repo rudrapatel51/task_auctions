@@ -1,163 +1,107 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/Axios';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
-const UserForm = () => {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    mobile2: '',
-    password: '',
-    address1: '',
-    pinCode: '',
-    cityId: '',
-    stateId: ''
-  });
+const Register = () => {
+  const [mobile, setMobile] = useState('');
+  const [otp, setOtp] = useState('');
+  const [orderId, setOrderId] = useState('');
+  const [step, setStep] = useState('sendOtp');
+  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  useEffect(() => {
+    AOS.init();
+  }, []);
+
+  const handleSendOtp = async () => {
+    try {
+      const response = await api.post('/otp-service/send', { mobile });
+      setOrderId(response.data.orderId);
+      setStep('verifyOtp');
+      setMessage('OTP sent successfully! Please check your mobile.');
+    } catch (error) {
+      console.error('Error sending OTP:', error.response || error.message);
+      setMessage('Failed to send OTP. Please try again.');
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleVerifyOtp = async () => {
     try {
-      const response = await api.post('/buyer/step-three', formData);
-      console.log('Form submitted successfully:', response.data);
+      await api.post('/buyer-login', { mobile, otp, orderId });
+      navigate('/vehicle-options');
     } catch (error) {
-      console.error('Error submitting form:', error.response || error.message);
+      console.error('Error verifying OTP:', error.response || error.message);
+      setMessage('Failed to verify OTP. Please check the OTP and try again.');
     }
   };
 
   return (
-    <form className="max-w-sm mx-auto" onSubmit={handleSubmit}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div className="mb-5">
-          <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="name@flowbite.com"
-            required
-          />
-        </div>
-        <div className="mb-5">
-          <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            required
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div className="mb-5">
-          <label htmlFor="firstName" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First name</label>
-          <input
-            type="text"
-            id="firstName"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="John"
-            required
-          />
-        </div>
-        <div className="mb-5">
-          <label htmlFor="lastName" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last name</label>
-          <input
-            type="text"
-            id="lastName"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Doe"
-            required
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div className="mb-5">
-          <label htmlFor="mobile2" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mobile number</label>
-          <input
-            type="tel"
-            id="mobile2"
-            name="mobile2"
-            value={formData.mobile2}
-            onChange={handleChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="123-456-7890"
-            required
-          />
-        </div>
-        <div className="mb-5">
-          <label htmlFor="address1" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address</label>
-          <input
-            type="text"
-            id="address1"
-            name="address1"
-            value={formData.address1}
-            onChange={handleChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="123 Main St"
-            required
-          />
+    <section className="bg-cover bg-center h-screen flex items-center justify-center"
+      style={{ backgroundImage: 'url(./backgroundimage.jpg)' }}>
+      <div className="w-full max-w-md bg-white bg-opacity-80 rounded-lg shadow dark:border dark:bg-gray-800 dark:border-gray-700">
+        <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+          <a href="/" className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+            <img className="w-28 h-8 mr-2" src="https://jp-task.vercel.app/assets/images/newJPLogo.png" alt="logo" />
+          </a>
+          <h1 className='flex items-center justify-center mb-6 text-2xl font-bold text-gray-900 dark:text-white'>Register</h1>
+          <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white text-center">
+            {step === 'sendOtp' ? 'Enter your mobile number' : 'Verify OTP'}
+          </h1>
+          <form className="space-y-4 md:space-y-6" onSubmit={(e) => e.preventDefault()}>
+            {step === 'sendOtp' ? (
+              <div>
+                <label htmlFor="mobile" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  Mobile Number
+                </label>
+                <input
+                  type="text"
+                  id="mobile"
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  placeholder="Your mobile number"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 mt-4"
+                >
+                  Send OTP
+                </button>
+              </div>
+            ) : (
+              <div>
+                <label htmlFor="otp" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  OTP
+                </label>
+                <input
+                  type="text"
+                  id="otp"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  placeholder="Enter OTP"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={handleVerifyOtp}
+                  className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 mt-4"
+                >
+                  Verify OTP
+                </button>
+              </div>
+            )}
+            {message && <p className="text-sm font-light text-gray-500 dark:text-gray-400 mt-4">{message}</p>}
+          </form>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div className="mb-5">
-          <label htmlFor="pinCode" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pin Code</label>
-          <input
-            type="text"
-            id="pinCode"
-            name="pinCode"
-            value={formData.pinCode}
-            onChange={handleChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="123456"
-            required
-          />
-        </div>
-        <div className="mb-5">
-          <label htmlFor="cityId" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">City</label>
-          <input
-            type="text"
-            id="cityId"
-            name="cityId"
-            value={formData.cityId}
-            onChange={handleChange}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="City"
-            required
-          />
-        </div>
-      </div>
-      <div className="mb-5">
-        <label htmlFor="stateId" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">State</label>
-        <input
-          type="text"
-          id="stateId"
-          name="stateId"
-          value={formData.stateId}
-          onChange={handleChange}
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          placeholder="State"
-          required
-        />
-      </div>
-      <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
-    </form>
+    </section>
   );
 };
 
-export default UserForm;
+export default Register;
